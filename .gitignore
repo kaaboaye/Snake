@@ -1,3 +1,7 @@
+node_modules/
+build_tmp/*
+dist/*
+
 # Windows image file caches
 Thumbs.db
 ehthumbs.db
