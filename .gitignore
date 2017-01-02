@@ -1,6 +1,7 @@
 node_modules/
-build_tmp/*
-dist/*
+build_tmp/
+dist/
+!.gitkeep
 
 # Windows image file caches
 Thumbs.db
