@@ -12,7 +12,16 @@ export class SnakeTailPart extends GameObject {
   }
 
   public draw(): this {
-    fill(255);
+    const color = [
+      (this.position.x / (width - SCALE)) * 255,
+      (this.position.y / (height - SCALE)) * 255,
+      ((this.position.x / (width - SCALE) +
+        this.position.y / (height - SCALE)) *
+        255) /
+        2
+    ].map(x => Math.round(x)) as [number, number, number];
+
+    fill(...color);
     rect(this.position.x, this.position.y, SCALE, SCALE);
 
     return this;

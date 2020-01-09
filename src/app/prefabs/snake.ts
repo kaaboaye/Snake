@@ -1,15 +1,18 @@
 import { Vector } from "p5";
 import { SCALE } from "../config";
+import { assertNever } from "../helpers";
 import { Direction, DirectionValue } from "./direction";
 import { Food } from "./food";
+import { FoodType } from "./food-type";
 import { Frame } from "./frame";
 import { GameObject } from "./game-object";
+import { InputType } from "./input-type";
 import { SnakeTailPart } from "./snake-tail-part";
 
 export class Snake extends GameObject {
   private set _score(score: number) {
     this.__score__ = score;
-    this._scoreObservers.forEach(observer => observer(score));
+    this._scoreObserver(score);
   }
 
   private get _score(): number {
@@ -20,20 +23,36 @@ export class Snake extends GameObject {
     return this._position;
   }
 
-  private readonly _scoreObservers: Set<(score: number) => void> = new Set();
   private _position: Vector = createVector(0, 0);
   private _direction: DirectionValue = Direction.Up;
   private readonly _tail: SnakeTailPart[] = [];
+  private readonly _foods: Food[];
+  private readonly _scoreObserver: (score: number) => void;
+  private readonly _deathObserver: (score: number) => void;
+  private readonly _headColor: readonly [number, number, number];
+  private readonly _inputType: InputType;
 
   // tslint:disable-next-line: variable-name
   private __score__: number = 0;
 
-  public constructor(public food: Food) {
+  public constructor(config: {
+    foods: Food[];
+    inputType?: InputType;
+    headColor?: [number, number, number];
+    scoreObserver?(score: number): void;
+    deathObserver?(score: number): void;
+  }) {
     super();
+
+    this._foods = config.foods;
+    this._headColor = config.headColor || [255, 255, 255];
+    this._inputType = config.inputType || InputType.Any;
+    this._scoreObserver = config.scoreObserver || (() => ({}));
+    this._deathObserver = config.deathObserver || (() => ({}));
   }
 
-  public update({ inputDirection }: Frame): this {
-    this.setDirection(inputDirection)
+  public update(frame: Frame): this {
+    this.setDirection(this.directionFromFrame(frame))
       .move()
       .eatFood()
       .eatTail();
@@ -44,17 +63,10 @@ export class Snake extends GameObject {
   }
 
   public draw(): this {
-    fill(255);
+    fill(...this._headColor);
     rect(this._position.x, this._position.y, SCALE, SCALE);
 
     this._tail.forEach(part => part.draw());
-
-    return this;
-  }
-
-  public addScoreObserver(observer: (score: number) => void): this {
-    observer(this._score);
-    this._scoreObservers.add(observer);
 
     return this;
   }
@@ -111,16 +123,32 @@ export class Snake extends GameObject {
   }
 
   private eatFood(): this {
-    if (this.distance(this.food) < 1) {
-      this._score += 1;
-      this.food.eat();
-    }
+    this._foods.forEach(food => {
+      if (this.collides(food)) {
+        food.eat();
+
+        switch (food.type) {
+          case FoodType.Healthy:
+            this.grow();
+
+            return;
+
+          case FoodType.Poisonous:
+            this.die();
+
+            return;
+
+          default:
+            assertNever(food.type);
+        }
+      }
+    });
 
     return this;
   }
 
   private eatTail(): this {
-    const eaten = this._tail.some(tailPart => this.distance(tailPart) < 1);
+    const eaten = this._tail.some(tailPart => this.collides(tailPart));
 
     if (eaten) {
       this._score = 0;
@@ -128,5 +156,33 @@ export class Snake extends GameObject {
     }
 
     return this;
+  }
+
+  private grow(): this {
+    this._score += 1;
+
+    return this;
+  }
+
+  private die(): this {
+    this._deathObserver(this._score);
+
+    this._score = 0;
+    this._tail.length = 0;
+
+    return this;
+  }
+
+  private directionFromFrame(frame: Frame): DirectionValue | null {
+    switch (this._inputType) {
+      case InputType.Arrows:
+        return frame.inputArrowDirection;
+
+      case InputType.Keys:
+        return frame.inputKeyDirection;
+
+      case InputType.Any:
+        return frame.inputArrowDirection;
+    }
   }
 }

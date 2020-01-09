@@ -1,5 +1,6 @@
 import { Vector } from "p5";
 import { COL_COUNT, ROW_COUNT, SCALE } from "../config";
+import { FoodType } from "./food-type";
 import { GameObject } from "./game-object";
 
 export class Food extends GameObject {
@@ -9,7 +10,7 @@ export class Food extends GameObject {
     return this._position;
   }
 
-  public constructor() {
+  public constructor(public readonly type: FoodType) {
     super();
     this.eat();
   }
@@ -19,7 +20,7 @@ export class Food extends GameObject {
   }
 
   public draw(): this {
-    fill(255, 0, 100);
+    fill(...this.color);
     rect(this._position.x, this._position.y, SCALE, SCALE);
 
     return this;
@@ -31,5 +32,15 @@ export class Food extends GameObject {
     this._position.mult(SCALE);
 
     return this;
+  }
+
+  private get color(): [number, number, number] {
+    switch (this.type) {
+      case FoodType.Healthy:
+        return [0, 255, 0];
+
+      case FoodType.Poisonous:
+        return [255, 0, 0];
+    }
   }
 }

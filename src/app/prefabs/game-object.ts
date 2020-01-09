@@ -14,4 +14,8 @@ export abstract class GameObject {
       gameObject.position.y
     );
   }
+
+  public collides(gameObject: GameObject): boolean {
+    return this.distance(gameObject) < 1;
+  }
 }

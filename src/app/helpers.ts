@@ -4,6 +4,6 @@ export function assert(condition: boolean, message?: string): void {
   }
 }
 
-export function assertNever(message?: string): void {
+export function assertNever(_never: never, message?: string): void {
   assert(false, message);
 }
