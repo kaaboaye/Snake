@@ -4,18 +4,20 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "serve": "rm -rf dist && parcel serve src/index.html --public-url .",
+    "build": "rm -rf dist && parcel build src/index.html --public-url ."
   },
   "author": "kaaboaye",
   "license": "ISC",
   "devDependencies": {
-    "gulp": "^3.9.1",
-    "gulp-concat": "^2.6.1",
-    "gulp-jade": "^1.1.0",
-    "gulp-sourcemaps": "^1.9.1",
-    "gulp-uglify": "^2.0.0"
+    "@types/p5": "^0.9.0",
+    "parcel-bundler": "^1.12.4",
+    "parcel-plugin-inliner": "^1.0.10",
+    "ts-config": "^20.10.0",
+    "tslint": "^5.20.1",
+    "typescript": "^3.7.4"
   },
   "dependencies": {
-    "p5": "^0.5.5"
+    "p5": "^0.10.2"
   }
 }
